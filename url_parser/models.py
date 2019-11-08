@@ -7,7 +7,11 @@ class ParserTask(models.Model):
     start_date = models.DateTimeField('date started')
     minutes = models.IntegerField(default=0)  # todo: >0
     seconds = models.IntegerField(default=0)  # todo: >0 <60
-    result = models.OneToOneField('UrlInfo', on_delete=models.CASCADE)
+    result = models.OneToOneField(
+        to='UrlInfo',
+        on_delete=models.CASCADE,
+        null=True
+    )
 
     def save(self, *args, **kwargs):
         if self.start_date is None:
