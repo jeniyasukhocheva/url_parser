@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+import requests
+from bs4 import BeautifulSoup
 
 
 class ParserTask(models.Model):
@@ -21,6 +23,33 @@ class ParserTask(models.Model):
             )
             self.start_date = timezone.now() + timeshift
         super().save(*args, **kwargs)
+
+    def parse_url(self):
+        response = requests.get(self.url)
+        if response.status_code != 200:
+            print('ERROR')
+            return
+        content = response.content
+        soup = BeautifulSoup(content, 'html.parser')
+        site_title = soup.title.name
+        title = [i.name for i in soup.find_all('h1')]
+        charsets = map(lambda x: x.get('charset'), soup.find_all('meta'))
+        buf = list(filter(None, charsets))
+
+        if len(buf) != 0:
+            encoding = buf[0]
+        else:
+            encoding = None
+
+        info = UrlInfo(
+            site_title=site_title,
+            encoding=encoding,
+            title='\n'.join(title)
+        )
+        info.save()
+        self.result = info
+        self.save()
+
 
 
 class UrlInfo(models.Model):
