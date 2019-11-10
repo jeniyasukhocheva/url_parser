@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>url_parser</title>
+    <style>
+        .row{
+            width: 100%;
+        }
+        .col {
+            float: left;
+            width: 50%;
+        }
+        .col textarea{
+            width: 100%;
+            height: 600px;
+        }
+
+    </style>
+</head>
+<body>
+    {% if parsed_pages %}
+        <div class="row">
+            <div class="col">
+                <textarea readonly>
+{% for page in parsed_pages %}{{ page.created|date:"d.m.Y H:i:s"}}: {{ page.task.url }} &mdash; {{ page.message }}
+{% endfor %}
+                </textarea>
+            </div>
+            <div class="col">
+                <textarea readonly>
+{% for page in parsed_pages %}{{ page.info_for_template }}
+{% endfor %}
+                </textarea>
+            </div>
+        </div>
+    {% else %}
+        <p>No information available.</p>
+    {% endif %}
+</body>
+</html>

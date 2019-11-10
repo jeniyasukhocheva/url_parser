@@ -1,7 +1,7 @@
-from django.db import models
-from django.utils import timezone
 import requests
 from bs4 import BeautifulSoup
+from django.db import models
+from django.utils import timezone
 
 
 class ParserTask(models.Model):
@@ -12,7 +12,8 @@ class ParserTask(models.Model):
     result = models.OneToOneField(
         to='UrlInfo',
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        related_name='task',
     )
 
     def save(self, *args, **kwargs):
@@ -25,9 +26,19 @@ class ParserTask(models.Model):
         super().save(*args, **kwargs)
 
     def parse_url(self):
-        response = requests.get(self.url)
+        try:
+            response = requests.get(self.url)
+        except Exception as e:
+            self.result = UrlInfo.objects.create(
+                message='error while requesting. ' + str(e)
+            )
+            self.save()
+            return
         if response.status_code != 200:
-            print('ERROR')
+            self.result = UrlInfo.objects.create(
+                message='An error has occurred:' + str(response.status_code)
+            )
+            self.save()
             return
         content = response.content
         soup = BeautifulSoup(content, 'html.parser')
@@ -41,17 +52,17 @@ class ParserTask(models.Model):
         else:
             encoding = None
 
-        info = UrlInfo(
+        self.result = UrlInfo.objects.create(
             site_title=site_title,
             encoding=encoding,
-            title='\n'.join(title)
+            title='\n'.join(title),
+            message='page parsed successful'
         )
-        info.save()
-        self.result = info
         self.save()
 
 
 class UrlInfo(models.Model):
+    message = models.CharField(max_length=200)
     site_title = models.CharField(
         max_length=200,
         null=True
@@ -61,3 +72,15 @@ class UrlInfo(models.Model):
         null=True
     )
     title = models.TextField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def info_for_template(self):
+        info = []
+        if self.site_title:
+            info.append('title: ' + self.site_title)
+        if self.encoding:
+            info.append('encoding: ' + self.encoding)
+        if self.title:
+            info.append('h1: ' + self.title.replace('\n', ', '))
+        return self.task.url + ' — ' + '; '.join(info) + '\n'
