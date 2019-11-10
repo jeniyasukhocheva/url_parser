@@ -31,8 +31,8 @@ class ParserTask(models.Model):
             return
         content = response.content
         soup = BeautifulSoup(content, 'html.parser')
-        site_title = soup.title.name
-        title = [i.name for i in soup.find_all('h1')]
+        site_title = soup.title.text
+        title = [i.text for i in soup.find_all('h1')]
         charsets = map(lambda x: x.get('charset'), soup.find_all('meta'))
         buf = list(filter(None, charsets))
 
@@ -51,8 +51,13 @@ class ParserTask(models.Model):
         self.save()
 
 
-
 class UrlInfo(models.Model):
-    site_title = models.CharField(max_length=200)
-    encoding = models.CharField(max_length=20)
-    title = models.TextField()
+    site_title = models.CharField(
+        max_length=200,
+        null=True
+    )
+    encoding = models.CharField(
+        max_length=20,
+        null=True
+    )
+    title = models.TextField(null=True)

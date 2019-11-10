@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ParserTask
+from .models import ParserTask, UrlInfo
 
 
 class ParserTaskAdmin(admin.ModelAdmin):
@@ -24,3 +24,4 @@ class ParserTaskAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ParserTask, ParserTaskAdmin)
+admin.site.register(UrlInfo)
