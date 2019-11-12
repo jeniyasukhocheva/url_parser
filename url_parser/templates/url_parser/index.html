@@ -29,8 +29,8 @@
             </div>
             <div class="col">
                 <textarea readonly>
-{% for page in parsed_pages %}{{ page.info_for_template }}
-{% endfor %}
+{% for page in parsed_pages %}{% if page.parsed_successful %}{{ page.info_for_template }}
+{% endif %}{% endfor %}
                 </textarea>
             </div>
         </div>
